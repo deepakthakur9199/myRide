@@ -3,7 +3,8 @@ import { io } from 'socket.io-client';
 
 export const SocketContext = createContext();
 
-const socket = io(`${import.meta.env.VITE_BASE_URL}`);
+const baseUrl = import.meta.env.VITE_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+const socket = io(baseUrl, { autoConnect: true });
 
 const SocketProvider = ({ children }) => {
     useEffect (() => {
@@ -11,7 +12,7 @@ const SocketProvider = ({ children }) => {
             console.log('Connected to server');
         });
 
-        socket.on('disonnect', () => {
+        socket.on('disconnect', () => {
             console.log('Disconnected from server');
         });
 

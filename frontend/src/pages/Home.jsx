@@ -41,20 +41,31 @@ const Home = () => {
   const { user } = useContext(UserDataContext)
 
   useEffect(() => { 
-    socket.emit("join", { userType: "user", userId: user._id })
-  }, [ user ])
+    if (user && user._id) {
+      socket.emit("join", { userType: "user", userId: user._id })
+    }
+  }, [ user, socket ])
 
-  socket.on('ride-confirmed', ride => {
-    setVehicleFound(false)
-    setWaitingForDriver(true)
-    setRide(ride)
-  })
+  useEffect(() => {
+    const handleRideConfirmed = (ride) => {
+      setVehicleFound(false)
+      setWaitingForDriver(true)
+      setRide(ride)
+    }
 
-  socket.on('ride-started', ride => {
-    console.log("ride")
-    setWaitingForDriver(false)
-    navigate('/riding', { state: { ride }})
-  })
+    const handleRideStarted = (ride) => {
+      setWaitingForDriver(false)
+      navigate('/riding', { state: { ride }})
+    }
+
+    socket.on('ride-confirmed', handleRideConfirmed)
+    socket.on('ride-started', handleRideStarted)
+
+    return () => {
+      socket.off('ride-confirmed', handleRideConfirmed)
+      socket.off('ride-started', handleRideStarted)
+    }
+  }, [socket, navigate])
 
   const handlePickupChange = async (e) => {
     setPickup(e.target.value)

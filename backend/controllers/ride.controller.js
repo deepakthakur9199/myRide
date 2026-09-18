@@ -25,24 +25,22 @@ module.exports.createRide = async (req, res) => {
         (async () => {
             try {
                 const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
-                const captainsInRadius = await mapService.getCaptainsInTheRadius(pickupCoordinates.lat, pickupCoordinates.lng, 2);
-
-                if (!Array.isArray(captainsInRadius) || captainsInRadius.length === 0) {
-                    console.warn("No captains found in radius.");
-                    return;
-                }
-
-                ride.otp = "";
-                await ride.save();
+                const lat = pickupCoordinates.lat || pickupCoordinates.ltd;
+                const lng = pickupCoordinates.lng;
+                const captainsInRadius = await mapService.getCaptainsInTheRadius(lat, lng, 2);
 
                 const rideWithUser = await rideModel.findOne({ _id: ride._id }).populate('user');
 
-                captainsInRadius.forEach(captain => {
-                    sendMessageToSocketId(captain.socketId, {
-                        event: 'new-ride',
-                        data: rideWithUser
+                if (Array.isArray(captainsInRadius)) {
+                    captainsInRadius.forEach(captain => {
+                        if (captain.socketId) {
+                            sendMessageToSocketId(captain.socketId, {
+                                event: 'new-ride',
+                                data: rideWithUser
+                            });
+                        }
                     });
-                });
+                }
             } catch (error) {
                 console.error("Error in post-ride operations:", error);
             }

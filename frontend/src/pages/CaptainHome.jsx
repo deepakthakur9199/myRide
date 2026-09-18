@@ -42,30 +42,35 @@ const CaptainHome = () => {
 
      const locationInterval = setInterval(updateLocation, 10000)
      updateLocation()
-  }, [])
 
-  socket.on('new-ride', (data) => {
-    setRide(data)
-    setRidePopUpPanel(true)
-  })
+     return () => clearInterval(locationInterval)
+  }, [captain])
+
+  useEffect(() => {
+    const handleNewRide = (data) => {
+      setRide(data)
+      setRidePopUpPanel(true)
+    }
+    socket.on('new-ride', handleNewRide)
+
+    return () => {
+      socket.off('new-ride', handleNewRide)
+    }
+  }, [socket])
 
   async function confirmRide() {
-
     const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/confirm`, {
-
         rideId: ride._id,
         captainId: captain._id,
-
     }, {
         headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
         }
     })
 
-    setRidePopupPanel(false)
-    setConfirmRidePopupPanel(true)
-
-}
+    setRidePopUpPanel(false)
+    setConfirmRidePopUp(true)
+  }
 
   useGSAP(() => {
     if (ridePopUpPanel) {

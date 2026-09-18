@@ -20,8 +20,8 @@ const ConfirmRidePopUp = (props) => {
         })
 
         if (response.status === 200) {
-            props.setConfirmRidePopupPanel(false)
-            props.setRidePopupPanel(false)
+            props.setConfirmRidePopUp(false)
+            props.setRidePopUpPanel(false)
             navigate('/captain-riding', { state: { ride: props.ride } })
         }
     };
@@ -31,7 +31,7 @@ const ConfirmRidePopUp = (props) => {
             <h5
                 className="p-1 text-center w-[93%] absolute top-0"
                 onClick={() => {
-                    props.setRidePopupPanel(false);
+                    props.setConfirmRidePopUp(false);
                 }}
             >
                 <i className="text-3xl text-gray-600 ri-arrow-down-wide-fill"></i>
