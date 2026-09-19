@@ -10,8 +10,6 @@ const captainRoutes = require('./routes/captain.routes');
 const mapsRoutes = require('./routes/maps.routes');
 const rideRoutes = require('./routes/ride.routes');
 
-connectToDb();
-
 app.use(cors({
     origin: '*',
     credentials: true
@@ -19,6 +17,18 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Database connection middleware for serverless & local
+app.use(async (req, res, next) => {
+    try {
+        await connectToDb();
+        next();
+    } catch (err) {
+        console.error('DB Middleware Error:', err.message);
+        res.status(500).json({ message: `Database Connection Failed: ${err.message}` });
+    }
+});
+
 
 app.get('/', (req, res) => {
     res.send('myRide API server is running smoothly!');
