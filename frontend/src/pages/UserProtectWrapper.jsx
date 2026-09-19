@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { UserDataContext } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { getBaseUrl } from '../config';
 
 const UserProtectWrapper = ({ children }) => {
     const token = localStorage.getItem('token');
@@ -15,7 +16,8 @@ const UserProtectWrapper = ({ children }) => {
             return;
         }
 
-        axios.get(`${import.meta.env.VITE_BASE_URL}/users/profile`, {
+        axios.get(`${getBaseUrl()}/users/profile`, {
+
             headers: {
                 Authorization: `Bearer ${token}`
             }

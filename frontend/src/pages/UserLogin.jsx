@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Car, Lock, Mail, ArrowRight } from 'lucide-react';
 import axios from 'axios';
 import { UserDataContext } from '../context/UserContext';
+import { getBaseUrl, extractErrorMessage } from '../config';
 
 const UserLogin = () => {
     const [email, setEmail] = useState('');
@@ -24,7 +25,7 @@ const UserLogin = () => {
         };
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, userData);
+            const response = await axios.post(`${getBaseUrl()}/users/login`, userData);
 
             if (response.status === 200) {
                 const data = response.data;
@@ -33,11 +34,12 @@ const UserLogin = () => {
                 navigate('/home');
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Invalid email or password. Please try again.');
+            setError(extractErrorMessage(err, 'Invalid email or password. Please try again.'));
         } finally {
             setLoading(false);
         }
     };
+
 
     return (
         <div className="p-7 h-screen flex flex-col justify-between max-w-md mx-auto bg-white">

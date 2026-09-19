@@ -1,12 +1,14 @@
 import React, { createContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
+import { getBaseUrl } from '../config';
 
 export const SocketDataContext = createContext();
 
-const socket = io(import.meta.env.VITE_BASE_URL || 'http://localhost:4000', {
+const socket = io(getBaseUrl() || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4000'), {
     autoConnect: true,
     transports: ['websocket', 'polling']
 });
+
 
 const SocketContext = ({ children }) => {
     const [isConnected, setIsConnected] = useState(socket.connected);

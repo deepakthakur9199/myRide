@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MapPin, Navigation, Wallet, User, ChevronDown } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getBaseUrl, extractErrorMessage } from '../config';
 
 const ConfirmRidePopUp = ({ ride, setConfirmRidePopupPanel }) => {
     const [otp, setOtp] = useState('');
@@ -23,7 +24,7 @@ const ConfirmRidePopUp = ({ ride, setConfirmRidePopupPanel }) => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/rides/start-ride`, {
+            const response = await axios.get(`${getBaseUrl()}/rides/start-ride`, {
                 params: {
                     rideId: ride._id,
                     otp: otp
@@ -38,11 +39,12 @@ const ConfirmRidePopUp = ({ ride, setConfirmRidePopupPanel }) => {
                 navigate('/captain-riding', { state: { ride: response.data } });
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Invalid OTP code. Please try again.');
+            setError(extractErrorMessage(err, 'Invalid OTP code. Please try again.'));
         } finally {
             setLoading(false);
         }
     };
+
 
     return (
         <div className="bg-white p-5 rounded-t-3xl shadow-2xl border-t border-gray-100 flex flex-col gap-4">

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { CaptainDataContext } from '../context/CaptainContext';
 import { Car, Lock, Mail, User, ShieldCheck, ArrowRight } from 'lucide-react';
+import { getBaseUrl, extractErrorMessage } from '../config';
 
 const CaptainSignup = () => {
     const [email, setEmail] = useState('');
@@ -42,7 +43,7 @@ const CaptainSignup = () => {
         };
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/register`, captainData);
+            const response = await axios.post(`${getBaseUrl()}/captains/register`, captainData);
 
             if (response.status === 201) {
                 const data = response.data;
@@ -51,11 +52,12 @@ const CaptainSignup = () => {
                 navigate('/captain-home');
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to register captain. Please check vehicle and user details.');
+            setError(extractErrorMessage(err, 'Failed to register captain. Please check vehicle and user details.'));
         } finally {
             setLoading(false);
         }
     };
+
 
     return (
         <div className="p-6 min-h-screen flex flex-col justify-between max-w-md mx-auto bg-white">

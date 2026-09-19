@@ -8,6 +8,8 @@ import { CaptainDataContext } from '../context/CaptainContext';
 import { SocketDataContext } from '../context/SocketContext';
 import axios from 'axios';
 import { Car, LogOut, Power } from 'lucide-react';
+import { getBaseUrl } from '../config';
+
 
 const CaptainHome = () => {
     const [ridePopupPanel, setRidePopupPanel] = useState(false);
@@ -64,13 +66,14 @@ const CaptainHome = () => {
     const confirmRide = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/confirm`, {
+            const response = await axios.post(`${getBaseUrl()}/rides/confirm`, {
                 rideId: ride._id
             }, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
+
 
             if (response.status === 200) {
                 setRidePopupPanel(false);

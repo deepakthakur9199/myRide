@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MapPin, Navigation, Wallet, User, CheckCircle2, ChevronDown } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getBaseUrl, extractErrorMessage } from '../config';
 
 const FinishRide = ({ ride, setFinishRidePanel }) => {
     const [loading, setLoading] = useState(false);
@@ -16,7 +17,7 @@ const FinishRide = ({ ride, setFinishRidePanel }) => {
         setError('');
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/end-ride`, {
+            const response = await axios.post(`${getBaseUrl()}/rides/end-ride`, {
                 rideId: ride._id
             }, {
                 headers: {
@@ -29,11 +30,12 @@ const FinishRide = ({ ride, setFinishRidePanel }) => {
                 navigate('/captain-home');
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to complete ride');
+            setError(extractErrorMessage(err, 'Failed to complete ride'));
         } finally {
             setLoading(false);
         }
     };
+
 
     return (
         <div className="bg-white p-5 rounded-t-3xl shadow-2xl border-t border-gray-100 flex flex-col gap-4">

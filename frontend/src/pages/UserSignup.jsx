@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { UserDataContext } from '../context/UserContext';
 import { Car, Lock, Mail, User, ArrowRight } from 'lucide-react';
+import { getBaseUrl, extractErrorMessage } from '../config';
 
 const UserSignup = () => {
     const [email, setEmail] = useState('');
@@ -30,7 +31,7 @@ const UserSignup = () => {
         };
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser);
+            const response = await axios.post(`${getBaseUrl()}/users/register`, newUser);
 
             if (response.status === 201) {
                 const data = response.data;
@@ -39,7 +40,7 @@ const UserSignup = () => {
                 navigate('/home');
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to create account. Please check inputs.');
+            setError(extractErrorMessage(err, 'Failed to create account. Please check inputs.'));
         } finally {
             setLoading(false);
         }

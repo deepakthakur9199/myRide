@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { CaptainDataContext } from '../context/CaptainContext';
 import { Car, Lock, Mail, ArrowRight } from 'lucide-react';
+import { getBaseUrl, extractErrorMessage } from '../config';
 
 const Captainlogin = () => {
     const [email, setEmail] = useState('');
@@ -24,7 +25,7 @@ const Captainlogin = () => {
         };
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/login`, captainData);
+            const response = await axios.post(`${getBaseUrl()}/captains/login`, captainData);
 
             if (response.status === 200) {
                 const data = response.data;
@@ -33,11 +34,12 @@ const Captainlogin = () => {
                 navigate('/captain-home');
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Invalid captain login credentials.');
+            setError(extractErrorMessage(err, 'Invalid captain login credentials.'));
         } finally {
             setLoading(false);
         }
     };
+
 
     return (
         <div className="p-7 h-screen flex flex-col justify-between max-w-md mx-auto bg-white">

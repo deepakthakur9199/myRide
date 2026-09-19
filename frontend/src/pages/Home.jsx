@@ -10,6 +10,8 @@ import ConfirmRide from '../components/ConfirmRide';
 import LookingForDriver from '../components/LookingForDriver';
 import WaitingForDriver from '../components/WaitingForDriver';
 import { Car, MapPin, Navigation, Search, LogOut } from 'lucide-react';
+import { getBaseUrl } from '../config';
+
 
 const Home = () => {
     const [pickup, setPickup] = useState('');
@@ -58,7 +60,7 @@ const Home = () => {
         if (val.trim().length >= 2) {
             try {
                 const token = localStorage.getItem('token');
-                const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`, {
+                const res = await axios.get(`${getBaseUrl()}/maps/get-suggestions`, {
                     params: { input: val },
                     headers: { Authorization: `Bearer ${token}` }
                 });
@@ -75,7 +77,7 @@ const Home = () => {
         if (val.trim().length >= 2) {
             try {
                 const token = localStorage.getItem('token');
-                const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`, {
+                const res = await axios.get(`${getBaseUrl()}/maps/get-suggestions`, {
                     params: { input: val },
                     headers: { Authorization: `Bearer ${token}` }
                 });
@@ -93,20 +95,20 @@ const Home = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/rides/get-fare`, {
+            const response = await axios.get(`${getBaseUrl()}/rides/get-fare`, {
                 params: { pickup, destination },
                 headers: { Authorization: `Bearer ${token}` }
             });
             setFare(response.data);
 
             // Fetch coordinates for map rendering
-            const pRes = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-coordinates`, {
+            const pRes = await axios.get(`${getBaseUrl()}/maps/get-coordinates`, {
                 params: { address: pickup },
                 headers: { Authorization: `Bearer ${token}` }
             });
             setPickupCoords(pRes.data);
 
-            const dRes = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-coordinates`, {
+            const dRes = await axios.get(`${getBaseUrl()}/maps/get-coordinates`, {
                 params: { address: destination },
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -119,7 +121,7 @@ const Home = () => {
     const createRide = async () => {
         try {
             const token = localStorage.getItem('token');
-            await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/create`, {
+            await axios.post(`${getBaseUrl()}/rides/create`, {
                 pickup,
                 destination,
                 vehicleType
@@ -130,6 +132,7 @@ const Home = () => {
             console.error('Error creating ride:', err);
         }
     };
+
 
     return (
         <div className="h-screen w-screen relative overflow-hidden flex flex-col justify-between bg-gray-100">
