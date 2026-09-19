@@ -1,107 +1,135 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios'
+import { MapPin, Navigation, Wallet, User, ChevronDown } from 'lucide-react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-const ConfirmRidePopUp = (props) => {
+const ConfirmRidePopUp = ({ ride, setConfirmRidePopupPanel }) => {
     const [otp, setOtp] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
+    const user = ride?.user || {};
+    const userName = user?.fullname ? `${user.fullname.firstname} ${user.fullname.lastname || ''}` : 'Rider';
+
     const submitHandler = async (e) => {
-        e.preventDefault()
+        e.preventDefault();
+        setError('');
+        if (otp.length !== 6) {
+            setError('Please enter valid 6-digit OTP');
+            return;
+        }
 
-        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/rides/start-ride`, {
-            params: {
-                rideId: props.ride._id,
-                otp: otp
-            },
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
+        setLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/rides/start-ride`, {
+                params: {
+                    rideId: ride._id,
+                    otp: otp
+                },
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (response.status === 200) {
+                setConfirmRidePopupPanel(false);
+                navigate('/captain-riding', { state: { ride: response.data } });
             }
-        })
-
-        if (response.status === 200) {
-            props.setConfirmRidePopUp(false)
-            props.setRidePopUpPanel(false)
-            navigate('/captain-riding', { state: { ride: props.ride } })
+        } catch (err) {
+            setError(err.response?.data?.message || 'Invalid OTP code. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div>
-            <h5
-                className="p-1 text-center w-[93%] absolute top-0"
-                onClick={() => {
-                    props.setConfirmRidePopUp(false);
-                }}
-            >
-                <i className="text-3xl text-gray-600 ri-arrow-down-wide-fill"></i>
-            </h5>
-            <h3 className='text-2xl font-semibold mb-5'>Confirm this ride to Start</h3>
-            <div className="flex items-center justify-between mt-4 bg-yellow-400 rounded-lg p-3">
-                <div className="flex items-center gap-3">
-                    <img
-                        className="w-16 h-16 rounded-full object-cover"
-                        src="https://imgs.search.brave.com/xkaxx3IhWSDjuuaMfGzJQnejF3vct-cSVuih64ZLmGs/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9jbGlw/YXJ0LWxpYnJhcnku/Y29tL2ltYWdlX2dh/bGxlcnkyL0hhcHB5/LUdpcmwtRnJlZS1Q/TkctSW1hZ2UucG5n"
-                        alt=""
-                    />
-                    <h2 className="text-xl font-medium capitalize">{props.ride?.user.fullName.firstName}</h2>
-                </div>
-                <h5 className="text-lg font-medium">1.4 KM</h5>
+        <div className="bg-white p-5 rounded-t-3xl shadow-2xl border-t border-gray-100 flex flex-col gap-4">
+            <div className="flex items-center justify-between border-b pb-3">
+                <h3 className="text-xl font-bold text-gray-900">Confirm OTP to Start Ride</h3>
+                <button
+                    onClick={() => setConfirmRidePopupPanel(false)}
+                    className="p-1 hover:bg-gray-100 rounded-full text-gray-500"
+                >
+                    <ChevronDown className="w-6 h-6" />
+                </button>
             </div>
 
-            <div className="flex flex-col justify-between items-center gap-2">
-                <div className="w-full mt-5">
-                    <div className="flex items-center gap-3 p-2 border-b-2">
-                        <i className="text-lg ri-user-location-line"></i>
-                        <div>
-                            <h3 className="text-lg font-semibold">432/14-A</h3>
-                            <p className="text-sm -mt-1 text-gray-600">{props.ride?.pickup}</p>
-                        </div>
+            <div className="flex items-center justify-between bg-gray-50 p-3.5 rounded-2xl border border-gray-100">
+                <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 bg-gray-200 rounded-full flex items-center justify-center font-bold text-gray-700">
+                        <User className="w-6 h-6" />
                     </div>
-                    <div className="flex items-center gap-3 p-2 border-b-2">
-                        <i className="text-lg ri-map-pin-line"></i>
-                        <div>
-                            <h3 className="text-lg font-semibold">432/14-A</h3>
-                            <p className="text-sm -mt-1 text-gray-600">{props.ride?.destination}</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-3 p-2 border-b-2">
-                        <i className="text-lg ri-currency-line"></i>
-                        <div>
-                            <h3 className="text-lg font-semibold">₹{props.ride?.fare}</h3>
-                            <p className="text-sm -mt-1 text-gray-600">Cash Cash</p>
-                        </div>
+                    <div>
+                        <h4 className="font-bold text-gray-900 text-base">{userName}</h4>
+                        <p className="text-xs text-gray-500">Picked up &bull; Ready to start</p>
                     </div>
                 </div>
-                <div className="mt-6">
-                    <form onSubmit={submitHandler} className="w-full">
-                        <input
-                            value={otp}
-                            onChange={(e) => setOtp(e.target.value)}
-                            required
-                            type="text"
-                            placeholder="Enter OTP"
-                            className="bg-[#efefef] rounded mt-4 px-8 py-2 border w-full text-lg placeholder:text-base"
-                        />
-                        {/* {error && <p className="text-red-600 text-sm mt-2">{error}</p>} */}
-                        <button
-                            type="submit"
-                            className="w-full mt-5 flex justify-center bg-green-600 p-3 text-white text-xl font-semibold rounded-lg"
-                        >
-                            Confirm
-                        </button>
-                        <button
-                            onClick={() => {
-                                props.setConfirmRidePopUp(false);
-                                props.setRidePopUpPanel(false);
-                            }}
-                            className="w-full mt-4 bg-zinc-600 p-3 text-white text-xl font-semibold rounded-lg"
-                        >
-                            Cancel
-                        </button>
-                    </form>
+                <h2 className="text-xl font-extrabold text-gray-900">₹{ride?.fare || 150}</h2>
+            </div>
+
+            <div className="w-full flex flex-col gap-3 divide-y divide-gray-100 text-sm">
+                <div className="flex items-start gap-4 pt-1">
+                    <div className="p-2 bg-gray-100 rounded-full text-gray-700 mt-1">
+                        <MapPin className="w-4 h-4" />
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-gray-800 text-xs">Pickup</h4>
+                        <p className="text-xs text-gray-500 mt-0.5 leading-snug">{ride?.pickup}</p>
+                    </div>
+                </div>
+
+                <div className="flex items-start gap-4 pt-2">
+                    <div className="p-2 bg-gray-100 rounded-full text-gray-700 mt-1">
+                        <Navigation className="w-4 h-4 text-black" />
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-gray-800 text-xs">Destination</h4>
+                        <p className="text-xs text-gray-500 mt-0.5 leading-snug">{ride?.destination}</p>
+                    </div>
                 </div>
             </div>
+
+            <form onSubmit={submitHandler} className="flex flex-col gap-3 mt-1">
+                {error && (
+                    <div className="p-2.5 bg-red-50 text-red-600 text-xs font-semibold rounded-xl text-center border border-red-200">
+                        {error}
+                    </div>
+                )}
+
+                <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-gray-700 uppercase tracking-wider text-center">
+                        Enter 6-Digit User OTP
+                    </label>
+                    <input
+                        type="text"
+                        maxLength="6"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        placeholder="1 2 3 4 5 6"
+                        className="w-full bg-gray-100 text-center font-mono font-bold text-2xl tracking-[0.5em] py-3.5 rounded-2xl border-2 border-gray-200 focus:border-black focus:outline-none transition-all"
+                        required
+                    />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mt-2">
+                    <button
+                        type="button"
+                        onClick={() => setConfirmRidePopupPanel(false)}
+                        className="bg-red-50 hover:bg-red-100 text-red-600 font-bold py-3.5 rounded-2xl transition-all text-sm"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-2xl transition-all text-sm shadow-lg disabled:opacity-50"
+                    >
+                        {loading ? 'Starting...' : 'Verify OTP & Start'}
+                    </button>
+                </div>
+            </form>
         </div>
     );
 };

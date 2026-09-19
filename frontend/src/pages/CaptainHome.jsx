@@ -1,128 +1,154 @@
-import NovaRide_logo from '../assets/NovaRide_logo.webp'
-import Home_Img from '../assets/Home_Img.webp'
-import React, { useState, useRef, useEffect, useContext } from 'react'
-import CaptainDetails from '../components/CaptainDetails'
-import RidePopUp from '../components/RidePopUp'
-import gsap from 'gsap'
-import { useGSAP } from '@gsap/react'
-import ConfirmRidePopUp from '../components/ConfirmRidePopUp'
-import { SocketContext } from '../context/SocketContext'
-import { CaptainDataContext } from '../context/CaptainContext'
-import axios from 'axios'
-
+import React, { useState, useEffect, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import CaptainDetails from '../components/CaptainDetails';
+import RidePopUp from '../components/RidePopUp';
+import ConfirmRidePopUp from '../components/ConfirmRidePopUp';
+import LiveTracking from '../components/LiveTracking';
+import { CaptainDataContext } from '../context/CaptainContext';
+import { SocketDataContext } from '../context/SocketContext';
+import axios from 'axios';
+import { Car, LogOut, Power } from 'lucide-react';
 
 const CaptainHome = () => {
-  const [ridePopUpPanel, setRidePopUpPanel] = useState(false)
-  const ridePopUpPanelRef = useRef(null)
-  const [confirmRidePopUp, setConfirmRidePopUp] = useState(false)
-  const confirmRidePopUpRef = useRef(null)
-  const [ ride, setRide ] = useState(null)
+    const [ridePopupPanel, setRidePopupPanel] = useState(false);
+    const [confirmRidePopupPanel, setConfirmRidePopupPanel] = useState(false);
+    const [ride, setRide] = useState(null);
+    const [isOnline, setIsOnline] = useState(true);
 
-  const { socket } = useContext(SocketContext)
-  const { captain } = useContext(CaptainDataContext)
+    const { captain } = useContext(CaptainDataContext);
+    const { socket, sendMessage, receiveMessage } = useContext(SocketDataContext);
+    const navigate = useNavigate();
 
-  useEffect(() => {  
-    socket.emit("join", { 
-      userType: "captain",
-      userId: captain._id
-     })
-     const updateLocation = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-          socket.emit('update-location-captain', {
-            userId: captain._id,
-            location: {
-              ltd: position.coords.latitude,
-              lng: position.coords.longitude
-            }
-          })
-        })
-      }
-     }
-
-     const locationInterval = setInterval(updateLocation, 10000)
-     updateLocation()
-
-     return () => clearInterval(locationInterval)
-  }, [captain])
-
-  useEffect(() => {
-    const handleNewRide = (data) => {
-      setRide(data)
-      setRidePopUpPanel(true)
-    }
-    socket.on('new-ride', handleNewRide)
-
-    return () => {
-      socket.off('new-ride', handleNewRide)
-    }
-  }, [socket])
-
-  async function confirmRide() {
-    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/confirm`, {
-        rideId: ride._id,
-        captainId: captain._id,
-    }, {
-        headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
+    // Join socket room
+    useEffect(() => {
+        if (captain && captain._id) {
+            sendMessage('join', {
+                userType: 'captain',
+                userId: captain._id
+            });
         }
-    })
+    }, [captain, sendMessage]);
 
-    setRidePopUpPanel(false)
-    setConfirmRidePopUp(true)
-  }
+    // Stream live location periodically
+    useEffect(() => {
+        if (!captain || !isOnline) return;
 
-  useGSAP(() => {
-    if (ridePopUpPanel) {
-      gsap.to(ridePopUpPanelRef.current, {
-        transform: 'translateY(0)'
-      })
-    } else {
-      gsap.to(ridePopUpPanelRef.current, {
-        transform: 'translateY(100%)'
-      })
-    }
-  }, [ridePopUpPanel])
+        const updateLocation = () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    sendMessage('update-location-captain', {
+                        userId: captain._id,
+                        location: {
+                            ltd: position.coords.latitude,
+                            lng: position.coords.longitude
+                        }
+                    });
+                });
+            }
+        };
 
-  useGSAP(() => {
-    if (confirmRidePopUp) {
-      gsap.to(confirmRidePopUpRef.current, {
-        transform: 'translateY(0)'
-      })
-    } else {
-      gsap.to(confirmRidePopUpRef.current, {
-        transform: 'translateY(100%)'
-      })
-    }
-  }, [confirmRidePopUp])
+        updateLocation();
+        const locationInterval = setInterval(updateLocation, 10000);
 
+        return () => clearInterval(locationInterval);
+    }, [captain, isOnline, sendMessage]);
 
-  return (
-    <div className='h-screen'>
-      <img className='w-20 mb-2 rounded-full absolute left-5 top-5' src={NovaRide_logo} alt="NovaRide_logo" />
-      <div className='h-3/5'>
-        <img className='h-full w-full object-cover' src={Home_Img} alt="map" />
-      </div>
-      <div className='h-2/5 p-6'>
-        <CaptainDetails />
-      </div>
-      <div ref={ridePopUpPanelRef} className='fixed w-full z-10 bottom-0 translate-y-full  bg-white px-3 py-10 pt-12'>
-        <RidePopUp 
-          ride={ride}
-          setRidePopUpPanel={setRidePopUpPanel}
-          setConfirmRidePopUp={setConfirmRidePopUp}
-          confirmRide={confirmRide}
-        />
-      </div>
-      <div ref={confirmRidePopUpRef} className='fixed w-full h-screen z-10 bottom-0 translate-y-full  bg-white px-3 py-10 pt-12'>
-        <ConfirmRidePopUp 
-          ride={ride}
-          setConfirmRidePopUp={setConfirmRidePopUp} 
-          setRidePopUpPanel={setRidePopUpPanel} 
-        />
-      </div>
-    </div>
-  )
-}
+    // Listen for new ride requests
+    useEffect(() => {
+        receiveMessage('new-ride', (data) => {
+            setRide(data);
+            setRidePopupPanel(true);
+        });
+    }, [receiveMessage]);
 
-export default CaptainHome
+    const confirmRide = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/confirm`, {
+                rideId: ride._id
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (response.status === 200) {
+                setRidePopupPanel(false);
+                setConfirmRidePopupPanel(true);
+            }
+        } catch (err) {
+            console.error('Error confirming ride:', err);
+        }
+    };
+
+    return (
+        <div className="h-screen w-screen relative overflow-hidden flex flex-col justify-between bg-gray-100">
+            {/* Top Bar */}
+            <div className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
+                <div className="flex items-center gap-2 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-lg pointer-events-auto border border-gray-100">
+                    <Car className="w-5 h-5 text-emerald-600" />
+                    <span className="font-extrabold text-lg tracking-tight text-gray-900">myRide Captain</span>
+                </div>
+
+                <div className="flex items-center gap-2 pointer-events-auto">
+                    <button
+                        onClick={() => setIsOnline(!isOnline)}
+                        className={`flex items-center gap-1.5 px-3 py-2 rounded-full font-bold text-xs shadow-lg backdrop-blur-md transition-all border ${
+                            isOnline
+                                ? 'bg-emerald-600 text-white border-emerald-500'
+                                : 'bg-gray-800 text-gray-300 border-gray-700'
+                        }`}
+                    >
+                        <Power className="w-3.5 h-3.5" />
+                        <span>{isOnline ? 'ONLINE' : 'OFFLINE'}</span>
+                    </button>
+
+                    <button
+                        onClick={() => navigate('/captain/logout')}
+                        className="p-2.5 bg-white/90 backdrop-blur-md hover:bg-gray-100 rounded-full shadow-lg text-gray-700 transition-all border border-gray-100"
+                        title="Logout"
+                    >
+                        <LogOut className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
+
+            {/* Map background */}
+            <div className="w-full h-full absolute inset-0 z-0">
+                <LiveTracking />
+            </div>
+
+            {/* Bottom Dashboard details */}
+            <div className="relative z-10 p-4 max-w-md w-full mx-auto mt-auto">
+                <CaptainDetails />
+            </div>
+
+            {/* New Ride Request Notification PopUp */}
+            {ridePopupPanel && (
+                <div className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm flex items-end">
+                    <div className="w-full max-w-md mx-auto">
+                        <RidePopUp
+                            ride={ride}
+                            confirmRide={confirmRide}
+                            setRidePopupPanel={setRidePopupPanel}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {/* Confirm Ride & OTP Modal */}
+            {confirmRidePopupPanel && (
+                <div className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm flex items-end">
+                    <div className="w-full max-w-md mx-auto">
+                        <ConfirmRidePopUp
+                            ride={ride}
+                            setConfirmRidePopupPanel={setConfirmRidePopupPanel}
+                        />
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default CaptainHome;

@@ -3,66 +3,59 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const captainSchema = new mongoose.Schema({
-    fullName: {
-        firstName: {
+    fullname: {
+        firstname: {
             type: String,
             required: true,
-            minlength: [3, ' First name must be at least 3 characters long '] 
+            minlength: [3, 'First name must be at least 3 characters long'],
         },
-        lastName: {
+        lastname: {
             type: String,
-            minlength: [3, ' Last name must be at least 3 characters long '],
+            minlength: [3, 'Last name must be at least 3 characters long'],
         }
     },
-
     email: {
         type: String,
         required: true,
         unique: true,
         lowercase: true,
-        match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email']
+        match: [ /^\S+@\S+\.\S+$/, 'Please enter a valid email address' ]
     },
-
     password: {
         type: String,
         required: true,
         select: false,
-    }, 
-
+    },
     socketId: {
         type: String,
-        default: null,
     },
-
     status: {
         type: String,
         enum: ['active', 'inactive'],
         default: 'inactive',
     },
-
     vehicle: {
-         color: {
+        color: {
             type: String,
             required: true,
             minlength: [3, 'Color must be at least 3 characters long'],
-         },
-         plate: {
+        },
+        plate: {
             type: String,
             required: true,
-            minlength:[3, 'Plate must be at least 3 characters long'],
-         },
-         capacity: {
+            minlength: [3, 'Plate must be at least 3 characters long'],
+        },
+        capacity: {
             type: Number,
             required: true,
             min: [1, 'Capacity must be at least 1'],
-         },
-         vehicleType: {
+        },
+        vehicleType: {
             type: String,
             required: true,
-            enum: ['car', 'auto', 'bike', 'motorcycle'],
-         }
+            enum: ['car', 'motorcycle', 'auto'],
+        }
     },
-
     location: {
         ltd: {
             type: Number,
@@ -71,21 +64,20 @@ const captainSchema = new mongoose.Schema({
             type: Number,
         }
     }
+}, { timestamps: true });
 
-})
-
-captainSchema.methods.generateAuthToken = function() {
-    const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET, { expiresIn: '24h'});
+captainSchema.methods.generateAuthToken = function () {
+    const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET || 'myride-super-secret-jwt-key-2026', { expiresIn: '24h' });
     return token;
-}
+};
 
 captainSchema.methods.comparePassword = async function (password) {
     return await bcrypt.compare(password, this.password);
-}
+};
 
 captainSchema.statics.hashPassword = async function (password) {
     return await bcrypt.hash(password, 10);
-}
+};
 
 const captainModel = mongoose.model('captain', captainSchema);
 

@@ -1,51 +1,98 @@
-/* eslint-disable react/prop-types */
-import React from 'react'
+import React from 'react';
+import { User, ChevronDown } from 'lucide-react';
 
-const VehiclePanel = (props) => {
+const VehiclePanel = ({ fare = {}, selectVehicle, setVehiclePanelOpen, setConfirmRidePanelOpen }) => {
+    const handleChooseVehicle = (type) => {
+        selectVehicle(type);
+        setVehiclePanelOpen(false);
+        setConfirmRidePanelOpen(true);
+    };
+
     return (
-        <div>
-            <h5 className='p-1 text-center w-[93%] absolute top-0 ' onClick={() => {
-                props.setVehiclePanel(false)
-            }} ><i className="text-3xl text-gray-600 ri-arrow-down-wide-fill"></i></h5>
-            <h3 className='text-2xl font-semibold mb-4'>choose a vehicle:</h3>
-            <div onClick={() => {
-                props.setConfirmRidePanel(true)
-                props.selectVehicle('car')
-            }} className='w-full flex items-center justify-between border-2  active:border-black rounded-xl mb-2'>
-                <img className='h-16' src="https://imgs.search.brave.com/KqcCNA9kgrqbzMEJo0T2zTKiuk8pmfhbYwZKJMI8Keg/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/dWJlci1hc3NldHMu/Y29tL2ltYWdlL3Vw/bG9hZC9mX2F1dG8s/cV9hdXRvOmVjbyxj/X2ZpbGwsaF8zNjgs/d181NTIvdjE3MTIw/MjczMDcvYXNzZXRz/LzQyL2ViODVjMy1l/MmRjLTRlOTUtYTcw/ZC0yMmVlNGYwODAx/NWYvb3JpZ2luYWwv/U2NyZWVuc2hvdC0y/MDI0LTA0LTAxLWF0/LTkuMDguMDdwLm0u/LnBuZw" alt="car" />
-                <div className='bg-white w-1/2 p-3'>
-                    <h4 className='font-medium'>NovaGo <span><i className="ri-user-3-line"></i>4</span></h4>
-                    <h5 className='text-sm font-semibold'>2 mins away</h5>
-                    <p className='text-xs text-gray-600'>Affordable, compact rides</p>
-                </div>
-                <h2 className='text-lg font-semibold p-1'>₹{props.fare.car}</h2>
+        <div className="bg-white p-5 rounded-t-3xl shadow-2xl border-t border-gray-100 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-900">Choose a Vehicle</h3>
+                <button
+                    onClick={() => setVehiclePanelOpen(false)}
+                    className="p-1 hover:bg-gray-100 rounded-full text-gray-500"
+                >
+                    <ChevronDown className="w-6 h-6" />
+                </button>
             </div>
-            <div onClick={() => {
-                props.setConfirmRidePanel(true)
-                props.selectVehicle('auto')
-            }} className='w-full flex items-center justify-between border-2 active:border-black rounded-xl mb-2'>
-                <img className='h-16' src="https://imgs.search.brave.com/P1cOCPx2Jfydlcyj49zAI-ErmYLFvTxtC_MQ3CV2GAY/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly93d3cu/cG5nbWFydC5jb20v/ZmlsZXMvNS9BdXRv/LVJpY2tzaGF3LVBO/Ry1QaG90by5wbmc" alt="auto" />
-                <div className='bg-white w-1/2 p-3'>
-                    <h4 className='font-medium'>miniAuto <span><i className="ri-user-3-line"></i>2</span></h4>
-                    <h5 className='text-sm font-semibold'>5 mins away</h5>
-                    <p className='text-xs text-gray-600'>Affordable, auto rides</p>
+
+            {/* Car option */}
+            <div
+                onClick={() => handleChooseVehicle('car')}
+                className="flex items-center justify-between p-3.5 border-2 border-gray-100 active:border-black hover:border-gray-800 rounded-2xl cursor-pointer transition-all bg-gray-50 hover:bg-white"
+            >
+                <img
+                    className="h-14 object-contain"
+                    src="https://www.pngplay.com/wp-content/uploads/8/Uber-PNG-Photos.png"
+                    alt="myRide Car"
+                    onError={(e) => { e.target.src = 'https://cdn-icons-png.flaticon.com/512/3202/3202003.png'; }}
+                />
+                <div className="flex-1 px-4">
+                    <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-gray-900 text-base">myRide Go</h4>
+                        <span className="flex items-center text-xs font-semibold text-gray-600 bg-gray-200 px-2 py-0.5 rounded-full">
+                            <User className="w-3 h-3 mr-1" /> 4
+                        </span>
+                    </div>
+                    <h5 className="text-xs font-medium text-gray-500 mt-1">2 mins away &bull; 15:24</h5>
+                    <p className="text-xs text-gray-400 mt-0.5">Affordable, compact rides</p>
                 </div>
-                <h2 className='text-lg font-semibold p-1'>₹{props.fare.auto}</h2>
+                <h2 className="text-lg font-extrabold text-gray-900">₹{fare.car || 150}</h2>
             </div>
-            <div onClick={() => {
-                props.setConfirmRidePanel(true)
-                props.selectVehicle('bike')
-            }} className='w-full flex items-center justify-between border-2 active:border-black rounded-xl mb-2'>
-                <img className='h-16' src="https://imgs.search.brave.com/G-zaqrlXYIDWeHFCueZGXBBTfGli0QZXga5a2JIgzoA/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly93d3cu/cG5nYWxsLmNvbS93/cC1jb250ZW50L3Vw/bG9hZHMvMi9Nb3Rv/cmN5Y2xlLUJpa2Ut/UE5HLUhpZ2gtUXVh/bGl0eS1JbWFnZS5w/bmc" alt="bike" />
-                <div className='bg-white w-1/2 p-3'>
-                    <h4 className='font-medium'>Bike <span><i className="ri-user-3-line"></i>1</span></h4>
-                    <h5 className='text-sm font-semibold'>3 mins away</h5>
-                    <p className='text-xs text-gray-600'>Affordable, motorcycle rides</p>
+
+            {/* Moto option */}
+            <div
+                onClick={() => handleChooseVehicle('moto')}
+                className="flex items-center justify-between p-3.5 border-2 border-gray-100 active:border-black hover:border-gray-800 rounded-2xl cursor-pointer transition-all bg-gray-50 hover:bg-white"
+            >
+                <img
+                    className="h-14 object-contain"
+                    src="https://www.uber-assets.com/image/upload/f_auto,q_auto:eco,c_fill,h_368,w_552/v1649231091/assets/2c/7fa194/original/Uber_Moto_360x240 pixels_Option1.png"
+                    alt="myRide Moto"
+                    onError={(e) => { e.target.src = 'https://cdn-icons-png.flaticon.com/512/3082/3082383.png'; }}
+                />
+                <div className="flex-1 px-4">
+                    <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-gray-900 text-base">Moto</h4>
+                        <span className="flex items-center text-xs font-semibold text-gray-600 bg-gray-200 px-2 py-0.5 rounded-full">
+                            <User className="w-3 h-3 mr-1" /> 1
+                        </span>
+                    </div>
+                    <h5 className="text-xs font-medium text-gray-500 mt-1">3 mins away &bull; 15:27</h5>
+                    <p className="text-xs text-gray-400 mt-0.5">Affordable motorcycle rides</p>
                 </div>
-                <h2 className='text-lg font-semibold p-1'>₹{props.fare.bike}</h2>
+                <h2 className="text-lg font-extrabold text-gray-900">₹{fare.moto || 65}</h2>
+            </div>
+
+            {/* Auto option */}
+            <div
+                onClick={() => handleChooseVehicle('auto')}
+                className="flex items-center justify-between p-3.5 border-2 border-gray-100 active:border-black hover:border-gray-800 rounded-2xl cursor-pointer transition-all bg-gray-50 hover:bg-white"
+            >
+                <img
+                    className="h-14 object-contain"
+                    src="https://www.uber-assets.com/image/upload/f_auto,q_auto:eco,c_fill,h_368,w_552/v1648431773/assets/1d/db8c56-0204-4ce4-81ce-56a11a07fe98/original/Uber_Auto_552x368 pixels_Option1.png"
+                    alt="myRide Auto"
+                    onError={(e) => { e.target.src = 'https://cdn-icons-png.flaticon.com/512/1048/1048315.png'; }}
+                />
+                <div className="flex-1 px-4">
+                    <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-gray-900 text-base">myRide Auto</h4>
+                        <span className="flex items-center text-xs font-semibold text-gray-600 bg-gray-200 px-2 py-0.5 rounded-full">
+                            <User className="w-3 h-3 mr-1" /> 3
+                        </span>
+                    </div>
+                    <h5 className="text-xs font-medium text-gray-500 mt-1">1 min away &bull; 15:22</h5>
+                    <p className="text-xs text-gray-400 mt-0.5">No haggling, doorstep pickup</p>
+                </div>
+                <h2 className="text-lg font-extrabold text-gray-900">₹{fare.auto || 110}</h2>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default VehiclePanel
+export default VehiclePanel;
