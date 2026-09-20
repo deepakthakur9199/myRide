@@ -1,94 +1,111 @@
-# myRide - Full-Stack MERN Ride-Hailing Application
+# myRide
 
-**myRide** is an end-to-end, production-ready MERN (MongoDB, Express, React, Node.js) ride-hailing application inspired by Uber. It features real-time WebSocket matching, driver-rider tracking, interactive Leaflet/OpenStreetMap routing, 6-digit OTP ride verification, fare calculation engine, and JWT-based authentication.
+A full-stack ride-hailing app inspired by Uber, built with the MERN stack.
 
----
+## Overview
 
-## 🚀 Features
+myRide connects riders and drivers in a real-time ride booking flow with:
 
-- 🚗 **Dual Role Ecosystem**: Separate authentication and dashboards for **Riders (Users)** and **Drivers (Captains)**.
-- ⚡ **Real-Time WebSockets (Socket.io)**: Live trip requests, captain location streaming, driver acceptance, OTP confirmation, and trip state sync.
-- 🗺️ **Interactive OpenStreetMap Integration**: Powered by Leaflet & OSRM with seamless Google Maps API fallback for geocoding, distance matrix, and route calculation out-of-the-box.
-- 🔐 **Secure Authentication**: Password hashing with Bcrypt, JWT authentication, and token blacklisting for safe logouts.
-- 📱 **Modern Responsive UI**: Built with React (Vite), Tailwind CSS, and Lucide React icons.
-- 🔑 **OTP Ride Verification**: Driver must verify the rider's 6-digit OTP before starting a trip.
-- 💰 **Dynamic Fare Matrix**: Real-time pricing algorithm for Car, Moto, and Auto based on distance and estimated travel time.
+- rider and captain authentication
+- live ride request matching
+- trip status updates via Socket.IO
+- fare estimation
+- OTP-based ride verification
+- map-based pickup and drop locations
 
----
+## Tech Stack
 
-## 🛠️ Project Structure
+- Frontend: React, Vite, Tailwind CSS
+- Backend: Node.js, Express
+- Database: MongoDB with Mongoose
+- Real-time: Socket.IO
+- Maps: Leaflet/OpenStreetMap with Google Maps fallback support
 
-```
+## Features
+
+- Rider signup/login and booking flow
+- Captain signup/login and driver dashboard
+- Live ride requests and acceptance flow
+- Ride tracking and live updates
+- Fare calculation based on route distance/time
+- OTP verification before trip start
+- Secure JWT-based auth
+
+## Project Structure
+
+```bash
 myRide/
-├── package.json               # Root scripts to run both backend & frontend
 ├── backend/
-│   ├── app.js                 # Express app initialization
-│   ├── server.js              # HTTP server & Socket.io setup
-│   ├── socket.js              # WebSocket connection logic
-│   ├── db/db.js               # MongoDB connection
-│   ├── models/                # User, Captain, Ride & BlacklistToken schemas
-│   ├── controllers/           # Auth, Map, and Ride business logic
-│   ├── services/              # Fare engine, OSM/Google map services
-│   └── routes/                # Express API endpoints
-└── frontend/
-    ├── src/
-    │   ├── context/           # User, Captain, and Socket React Contexts
-    │   ├── components/        # Leaflet map, Fare options, Driver modals
-    │   └── pages/             # Rider & Captain pages (Auth, Home, Riding)
-    ├── index.html
-    └── vite.config.js
+│   ├── controllers/
+│   ├── db/
+│   ├── middlewares/
+│   ├── models/
+│   ├── routes/
+│   ├── services/
+│   ├── app.js
+│   ├── server.js
+│   └── socket.js
+├── frontend/
+│   ├── src/
+│   ├── index.html
+│   ├── package.json
+│   └── vite.config.js
+├── package.json
+├── README.md
+├── vercel.json
+└── api/
 ```
 
----
+## Getting Started
 
-## 🚦 Getting Started
+### 1. Install dependencies
 
-### 1. Install Dependencies
-Run the following from the root directory:
 ```bash
 npm run install-all
 ```
 
-### 2. Configure Environment Variables
+### 2. Configure environment variables
 
-**Backend (`backend/.env`):**
+Create a `.env` file in the `backend` folder:
+
 ```env
 PORT=4000
 DB_CONNECT=mongodb://127.0.0.1:27017/myride
 JWT_SECRET=myride-super-secret-jwt-key-2026
-GOOGLE_MAPS_API= # Optional: Leaflet / OpenStreetMap fallback works out of the box!
+GOOGLE_MAPS_API=
 ```
 
-**Frontend (`frontend/.env`):**
+Create a `.env` file in the `frontend` folder:
+
 ```env
 VITE_BASE_URL=http://localhost:4000
 ```
 
-### 3. Start the Application
+### 3. Run the app
 
-Start Backend server:
+Start the backend:
+
 ```bash
-cd backend
-npm run dev
+npm run backend
 ```
 
-Start Frontend development server:
+Start the frontend:
+
 ```bash
-cd frontend
-npm run dev
+npm run frontend
 ```
 
----
+Then open:
 
-## 🔗 Key API Endpoints
+```text
+http://localhost:5173
+```
 
-- `POST /users/register` - Rider Registration
-- `POST /users/login` - Rider Login
-- `POST /captains/register` - Driver Registration (with Vehicle details)
-- `POST /captains/login` - Driver Login
-- `GET /maps/get-suggestions?input=...` - Location Autocomplete
-- `GET /rides/get-fare?pickup=...&destination=...` - Dynamic Fare Matrix
-- `POST /rides/create` - Create Ride Request & Broadcast to Nearby Drivers
-- `POST /rides/confirm` - Accept Ride (Driver)
-- `GET /rides/start-ride?rideId=...&otp=...` - Verify OTP & Start Ride
-- `POST /rides/end-ride` - Complete Ride & Collect Cash Payment
+## Notes
+
+- MongoDB must be running locally for the backend to connect successfully.
+- This is a development setup intended for local use and demo purposes.
+
+## License
+
+ISC
